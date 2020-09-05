@@ -5,6 +5,7 @@ import flixel.FlxState;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 import flixel.math.FlxPoint;
+import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 import haxe.Json;
@@ -111,6 +112,12 @@ class PlayState extends FlxState
 		}
 
 		updateUI();
+
+		var levelText = new FlxText(FlxG.width - 4, FlxG.height - 4, 0, "Level " + levelNumber);
+		levelText.setFormat("assets/fonts/Roboto-Medium.ttf", 32, FlxColor.BLACK);
+		levelText.x -= levelText.width;
+		levelText.y -= levelText.height;
+		add(levelText);
 	}
 
 	function loadLevel()
