@@ -57,7 +57,7 @@ class TitleState extends FlxState
 	override public function update(elapased:Float)
 	{
 		super.update(elapased);
-		if (FlxG.keys.anyPressed([ENTER, SPACE, UP, DOWN, LEFT, RIGHT]))
+		if (FlxG.keys.anyPressed([ENTER, SPACE, UP, DOWN, LEFT, RIGHT, W, A, S, D]))
 			FlxG.switchState(new PlayState());
 	}
 }
