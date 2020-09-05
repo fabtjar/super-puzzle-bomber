@@ -17,7 +17,7 @@
   "defaultExportMode": ".json",
   "compactExport": false,
   "externalScript": "",
-  "playCommand": "",
+  "playCommand": "lime test ..\\..\\..\\ hashlink -debug",
   "entityTags": [],
   "layers": [
     {
