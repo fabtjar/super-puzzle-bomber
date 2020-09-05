@@ -23,8 +23,13 @@ class Player extends FlxSprite
 	{
 		super();
 		loadGraphic("assets/images/player.png", true, 64, 80);
-		animation.add("idle", [0]);
-		animation.add("walk", [1, 2, 3, 4], 10);
+		animation.add("idle_down", [0]);
+		animation.add("idle_up", [4]);
+		animation.add("idle_side", [8]);
+		animation.add("walk_down", [1, 2, 3, 2], 10);
+		animation.add("walk_up", [5, 6, 7, 6], 10);
+		animation.add("walk_side", [9, 10, 11, 10], 10);
+		animation.play("idle_down");
 		offset.y = 16;
 		setSize(64, 64);
 
@@ -55,7 +60,7 @@ class Player extends FlxSprite
 
 		if (!canMove)
 		{
-			animation.play("idle");
+			animation.play("idle_down");
 			return;
 		}
 
@@ -75,7 +80,58 @@ class Player extends FlxSprite
 		y += moveDir.x == 0 ? moveDir.y * movement : 0;
 		wrapAroundScreen();
 
-		animation.play(moveDir.x != 0 || moveDir.y != 0 ? "walk" : "idle");
+		setAnimation();
+	}
+
+	function getFacing():Int
+	{
+		if (moveDir.y < 0)
+			return FlxObject.UP;
+		else if (moveDir.y > 0)
+			return FlxObject.DOWN;
+		else if (moveDir.x < 0)
+			return FlxObject.LEFT;
+		else if (moveDir.x > 0)
+			return FlxObject.RIGHT;
+		else
+			return FlxObject.DOWN;
+	}
+
+	function setAnimation()
+	{
+		var isMoving = moveDir.x != 0 || moveDir.y != 0;
+		flipX = false;
+		if (isMoving)
+		{
+			facing = getFacing();
+			switch facing
+			{
+				case FlxObject.UP:
+					animation.play("walk_up");
+				case FlxObject.DOWN:
+					animation.play("walk_down");
+				case FlxObject.LEFT:
+					flipX = true;
+					animation.play("walk_side");
+				case FlxObject.RIGHT:
+					animation.play("walk_side");
+			}
+		}
+		else
+		{
+			switch facing
+			{
+				case FlxObject.UP:
+					animation.play("idle_up");
+				case FlxObject.DOWN:
+					animation.play("idle_down");
+				case FlxObject.LEFT:
+					flipX = true;
+					animation.play("idle_side");
+				case FlxObject.RIGHT:
+					animation.play("idle_side");
+			}
+		}
 	}
 
 	function wrapAroundScreen()
