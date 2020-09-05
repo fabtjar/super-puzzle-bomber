@@ -167,7 +167,10 @@ class PlayState extends FlxState
 			resetLevel();
 
 		if (FlxG.keys.pressed.ESCAPE)
+		{
+			FlxG.sound.music.destroy();
 			FlxG.switchState(new TitleState());
+		}
 
 		player.collideAndSlide(solids);
 		player.updateWrapSprite();
