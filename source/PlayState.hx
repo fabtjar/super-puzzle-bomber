@@ -221,6 +221,7 @@ class PlayState extends FlxState
 		if (pressTalkText.visible && FlxG.keys.justPressed.ENTER)
 		{
 			pressTalkText.visible = false;
+			people.forEach(person -> person.facePlayer(player.facing));
 			openSubState(new TextBoxState(stairs.visible ? talkWinText : talkText));
 		}
 	}
