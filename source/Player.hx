@@ -163,6 +163,7 @@ class Player extends FlxSprite
 		FlxG.collide(this, walls);
 
 		var remainingMovement = movement - (Math.abs(x - last.x) + Math.abs(y - last.y));
+		var slidingMovement = remainingMovement * .5;
 
 		var rect = getHitbox();
 		if (isTouching(FlxObject.UP))
@@ -170,36 +171,36 @@ class Player extends FlxSprite
 			if (moveDir.x != 0)
 				x += remainingMovement * FlxMath.signOf(moveDir.x);
 			else if (!walls.overlapsPoint(new FlxPoint(rect.left + 1, rect.top - 1)))
-				x -= remainingMovement;
+				x -= slidingMovement;
 			else if (!walls.overlapsPoint(new FlxPoint(rect.right - 1, rect.top - 1)))
-				x += remainingMovement;
+				x += slidingMovement;
 		}
 		else if (isTouching(FlxObject.DOWN))
 		{
 			if (moveDir.x != 0)
 				x += remainingMovement * FlxMath.signOf(moveDir.x);
 			else if (!walls.overlapsPoint(new FlxPoint(rect.left + 1, rect.bottom + 1)))
-				x -= remainingMovement;
+				x -= slidingMovement;
 			else if (!walls.overlapsPoint(new FlxPoint(rect.right - 1, rect.bottom + 1)))
-				x += remainingMovement;
+				x += slidingMovement;
 		}
 		else if (isTouching(FlxObject.LEFT))
 		{
 			if (moveDir.y != 0)
 				y += remainingMovement * FlxMath.signOf(moveDir.y);
 			else if (!walls.overlapsPoint(new FlxPoint(rect.left - 1, rect.top + 1)))
-				y -= remainingMovement;
+				y -= slidingMovement;
 			else if (!walls.overlapsPoint(new FlxPoint(rect.left - 1, rect.bottom - 1)))
-				y += remainingMovement;
+				y += slidingMovement;
 		}
 		else if (isTouching(FlxObject.RIGHT))
 		{
 			if (moveDir.y != 0)
 				y += remainingMovement * FlxMath.signOf(moveDir.y);
 			else if (!walls.overlapsPoint(new FlxPoint(rect.right + 1, rect.top + 1)))
-				y -= remainingMovement;
+				y -= slidingMovement;
 			else if (!walls.overlapsPoint(new FlxPoint(rect.right + 1, rect.bottom - 1)))
-				y += remainingMovement;
+				y += slidingMovement;
 		}
 		FlxG.collide(this, walls);
 	}
