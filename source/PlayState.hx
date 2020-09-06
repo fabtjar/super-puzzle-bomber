@@ -273,6 +273,8 @@ class PlayState extends FlxState
 						var exitSound = FlxG.sound.play("assets/sounds/find_stairs.wav");
 						exitSound.onComplete = () ->
 						{
+							if (levelFailed)
+								return;
 							FlxG.sound.playMusic("assets/sounds/exit.ogg", 1, false);
 							people.forEach(person -> person.animation.play("win"));
 						}
