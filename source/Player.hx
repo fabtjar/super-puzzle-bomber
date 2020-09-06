@@ -5,7 +5,6 @@ import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.util.FlxColor;
-import flixel.util.FlxTimer;
 
 class Player extends FlxSprite
 {
@@ -81,6 +80,27 @@ class Player extends FlxSprite
 		wrapAroundScreen();
 
 		setAnimation();
+	}
+
+	public function getActionPosition():FlxPoint
+	{
+		var rect = getHitbox();
+		var position = new FlxPoint((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2);
+		var distance = 20;
+
+		switch facing
+		{
+			case FlxObject.UP:
+				position.y = rect.top - distance;
+			case FlxObject.DOWN:
+				position.y = rect.bottom + distance;
+			case FlxObject.LEFT:
+				position.x = rect.left - distance;
+			case FlxObject.RIGHT:
+				position.x = rect.right + distance;
+		}
+
+		return position;
 	}
 
 	function getFacing():Int

@@ -4,7 +4,7 @@
   "height": 640,
   "offsetX": 0,
   "offsetY": 0,
-  "values": {"bombs": 2, "size": 2},
+  "values": {"bombs": 2, "size": 2, "talkText": "I'm just resting my legs for a bit. You sort things out for now.", "talkWinText": "I was just about to help you but you were too fast."},
   "layers": [
     {
       "name": "world",

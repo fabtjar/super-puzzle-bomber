@@ -6,6 +6,7 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 import flixel.math.FlxPoint;
 import flixel.text.FlxText;
+import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 import haxe.Json;
@@ -31,6 +32,10 @@ class PlayState extends FlxState
 
 	var bombUI:FlxTypedGroup<FlxSprite>;
 	var fireUI:FlxTypedGroup<FlxSprite>;
+
+	var pressTalkText:FlxText;
+	var talkText:String;
+	var talkWinText:String;
 
 	public function new(levelNumber:Int = 1)
 	{
@@ -124,6 +129,14 @@ class PlayState extends FlxState
 		levelText.x -= levelText.width;
 		levelText.y -= levelText.height;
 		add(levelText);
+
+		pressTalkText = new FlxText(FlxG.width / 2, FlxG.height - 4, 0, "Press ENTER to talk");
+		pressTalkText.setFormat("assets/fonts/Roboto-Medium.ttf", 32, FlxColor.BLACK);
+		pressTalkText.x -= pressTalkText.width / 2;
+		pressTalkText.y -= pressTalkText.height;
+		FlxTween.tween(pressTalkText, {alpha: 0}, .2, {type: FlxTweenType.PINGPONG});
+		pressTalkText.visible = false;
+		add(pressTalkText);
 	}
 
 	function loadLevel()
@@ -131,6 +144,9 @@ class PlayState extends FlxState
 		var levelText = Assets.getText("assets/data/levels/level_" + levelNumber + ".json");
 		var levelData = Json.parse(levelText);
 		var map:Array<Array<Int>> = levelData.layers[0].data2D;
+
+		talkText = levelData.values.talkText;
+		talkWinText = levelData.values.talkWinText;
 
 		for (y in 0...map.length)
 		{
@@ -200,6 +216,18 @@ class PlayState extends FlxState
 
 		FlxG.overlap(player, bombBoxes, (_, bombBox:BombBox) -> bombBox.use());
 		FlxG.overlap(player, fireBoxes, (_, fireBox:FireBox) -> fireBox.use());
+
+		showPressTalkText();
+		if (pressTalkText.visible && FlxG.keys.justPressed.ENTER)
+		{
+			pressTalkText.visible = false;
+			openSubState(new TextBoxState(stairs.visible ? talkWinText : talkText));
+		}
+	}
+
+	public function showPressTalkText()
+	{
+		pressTalkText.visible = people.overlapsPoint(player.getActionPosition());
 	}
 
 	public function resetLevel()

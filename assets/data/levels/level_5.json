@@ -4,7 +4,7 @@
   "height": 640,
   "offsetX": 0,
   "offsetY": 0,
-  "values": {"bombs": 2, "size": 1},
+  "values": {"bombs": 2, "size": 1, "talkText": "You better not blow yourself up... or me!", "talkWinText": "You keep getting better and better."},
   "layers": [
     {
       "name": "world",
