@@ -26,6 +26,8 @@ class PlayState extends FlxState
 	var stairs:FlxSprite;
 	var bombBoxes:FlxTypedGroup<BombBox>;
 	var fireBoxes:FlxTypedGroup<FireBox>;
+	var people:FlxTypedSpriteGroup<Person>;
+	var levelFailed = false;
 
 	var bombUI:FlxTypedGroup<FlxSprite>;
 	var fireUI:FlxTypedGroup<FlxSprite>;
@@ -85,6 +87,10 @@ class PlayState extends FlxState
 
 		fires = new FlxTypedGroup();
 		add(fires);
+
+		people = new FlxTypedSpriteGroup();
+		add(people);
+		solids.add(people);
 
 		player = new Player();
 		add(player);
@@ -154,6 +160,8 @@ class PlayState extends FlxState
 						bombBoxes.add(new BombBox(tileX, tileY));
 					case 5:
 						fireBoxes.add(new FireBox(tileX, tileY));
+					case 7:
+						people.add(new Person(tileX, tileY));
 				}
 			}
 		}
@@ -184,8 +192,11 @@ class PlayState extends FlxState
 
 		FlxG.overlap(bombs, fires, (bomb:Bomb, _) -> bomb.explodeEarly());
 
-		if (player.canMove)
+		if (!levelFailed)
+		{
 			FlxG.overlap(player, fires, (_, _) -> player.dead());
+			FlxG.overlap(people, fires, (person:Person, _) -> person.dead());
+		}
 
 		FlxG.overlap(player, bombBoxes, (_, bombBox:BombBox) -> bombBox.use());
 		FlxG.overlap(player, fireBoxes, (_, fireBox:FireBox) -> fireBox.use());
@@ -195,6 +206,21 @@ class PlayState extends FlxState
 	{
 		FlxG.switchState(new PlayState(levelNumber));
 		FlxG.sound.play("assets/sounds/reset.wav").persist = true;
+	}
+
+	public function failedLevel()
+	{
+		// Could fail more than once when checking fires.
+		if (levelFailed)
+			return;
+
+		levelFailed = true;
+		player.dead();
+		FlxG.sound.music.stop();
+		FlxG.sound.play("assets/sounds/dead.wav");
+		FlxG.camera.flash(FlxColor.RED, .2);
+		FlxTimer.globalManager.clear();
+		new FlxTimer().start(2, _ -> PlayState.instance.resetLevel());
 	}
 
 	public function createBomb(x:Float, y:Float, size:Int):Bool
@@ -245,7 +271,11 @@ class PlayState extends FlxState
 						stairs.setPosition(brick.x, brick.y);
 						FlxG.sound.music.stop();
 						var exitSound = FlxG.sound.play("assets/sounds/find_stairs.wav");
-						exitSound.onComplete = () -> FlxG.sound.playMusic("assets/sounds/exit.ogg", 1, false);
+						exitSound.onComplete = () ->
+						{
+							FlxG.sound.playMusic("assets/sounds/exit.ogg", 1, false);
+							people.forEach(person -> person.animation.play("win"));
+						}
 					}
 					bricks.remove(brick);
 				});

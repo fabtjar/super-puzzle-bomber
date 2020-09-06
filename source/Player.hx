@@ -229,13 +229,8 @@ class Player extends FlxSprite
 	public function dead()
 	{
 		canMove = false;
-		FlxG.sound.music.stop();
-		FlxG.sound.play("assets/sounds/dead.wav");
 		color = FlxColor.GRAY;
-
-		FlxG.camera.flash(FlxColor.RED, .2);
-		FlxTimer.globalManager.clear();
-		new FlxTimer().start(2, _ -> PlayState.instance.resetLevel());
+		PlayState.instance.failedLevel();
 	}
 
 	override public function draw()
