@@ -183,7 +183,7 @@ class Player extends FlxSprite
 		FlxG.collide(this, walls);
 
 		var remainingMovement = movement - (Math.abs(x - last.x) + Math.abs(y - last.y));
-		var slidingMovement = remainingMovement * .5;
+		var slidingMovement = remainingMovement;
 
 		var rect = getHitbox();
 		if (isTouching(FlxObject.UP))
