@@ -66,7 +66,7 @@ func get_rect() -> Rect2:
 func get_center() -> Vector2:
 	return position + HITBOX_SIZE / 2.0
 
-func update_input_and_move(delta: float) -> void:
+func update_input_and_move(delta: float, solid_rects: Array) -> void:
 	if not can_move:
 		_play(sprite, "idle_down")
 		return
@@ -84,25 +84,40 @@ func update_input_and_move(delta: float) -> void:
 	position.x += move_dir.x * movement_amount
 	position.y += 0.0 if move_dir.x != 0 else move_dir.y * movement_amount
 
-	_apply_lane_assist(delta)
+	_apply_lane_assist(delta, solid_rects)
 	_wrap_around_screen()
 	_set_animation()
 
-## The SNES-Zelda/Bomberman trick: while walking a straight line, gently pull
-## the perpendicular axis toward the center of the current tile row/column,
-## so imprecise keyboard input still lines you up with a single-tile gap
-## instead of clipping its edge and stopping dead. Only runs when the player
-## isn't also pressing the perpendicular direction, so it never fights a
-## deliberate turn - and it only nudges position, so collide_and_slide still
-## blocks it same as any other movement if the nudge would walk into a wall.
-func _apply_lane_assist(delta: float) -> void:
+## The SNES-Zelda/Bomberman trick: while walking a straight line into
+## something solid, gently pull the perpendicular axis toward the center of
+## the current tile row/column - but only when that's actually a gap you
+## could slip through, not a flat wall. So imprecise keyboard input still
+## lines you up with a single-tile opening instead of clipping its edge and
+## stopping dead, without visibly nudging you sideways while pushing
+## straight into a real wall (which has nowhere to slide to anyway). Only
+## runs when the player isn't also pressing the perpendicular direction, so
+## it never fights a deliberate turn.
+func _apply_lane_assist(delta: float, solid_rects: Array) -> void:
+	if not _rect_overlaps_any(get_rect(), solid_rects):
+		return
+
 	var assist_speed := SPEED * delta
 	if move_dir.x != 0 and move_dir.y == 0:
 		var target_y := roundf(position.y / Constants.TILE_SIZE) * Constants.TILE_SIZE
-		position.y = move_toward(position.y, target_y, assist_speed)
+		var lane_ahead := Rect2(Vector2(position.x, target_y), HITBOX_SIZE)
+		if not _rect_overlaps_any(lane_ahead, solid_rects):
+			position.y = move_toward(position.y, target_y, assist_speed)
 	elif move_dir.y != 0 and move_dir.x == 0:
 		var target_x := roundf(position.x / Constants.TILE_SIZE) * Constants.TILE_SIZE
-		position.x = move_toward(position.x, target_x, assist_speed)
+		var lane_ahead := Rect2(Vector2(target_x, position.y), HITBOX_SIZE)
+		if not _rect_overlaps_any(lane_ahead, solid_rects):
+			position.x = move_toward(position.x, target_x, assist_speed)
+
+func _rect_overlaps_any(rect: Rect2, rects: Array) -> bool:
+	for r in rects:
+		if rect.intersects(r):
+			return true
+	return false
 
 func _update_move_dir() -> void:
 	move_dir = Vector2.ZERO

@@ -54,6 +54,7 @@ func _ready() -> void:
 	var bg := ColorRect.new()
 	bg.color = Color8(129, 240, 155)
 	bg.size = Vector2(Constants.SCREEN_SIZE, Constants.SCREEN_SIZE)
+	bg.z_index = -100
 	add_child(bg)
 
 	world_layer = Node2D.new()
@@ -236,8 +237,9 @@ func get_solid_rects() -> Array:
 func _process(delta: float) -> void:
 	_handle_global_keys()
 
-	player.update_input_and_move(delta)
-	player.collide_and_slide(get_solid_rects())
+	var solid_rects := get_solid_rects()
+	player.update_input_and_move(delta, solid_rects)
+	player.collide_and_slide(solid_rects)
 	player.update_wrap_sprite()
 
 	if player.can_move and stairs_visible:
