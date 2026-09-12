@@ -84,8 +84,25 @@ func update_input_and_move(delta: float) -> void:
 	position.x += move_dir.x * movement_amount
 	position.y += 0.0 if move_dir.x != 0 else move_dir.y * movement_amount
 
+	_apply_lane_assist(delta)
 	_wrap_around_screen()
 	_set_animation()
+
+## The SNES-Zelda/Bomberman trick: while walking a straight line, gently pull
+## the perpendicular axis toward the center of the current tile row/column,
+## so imprecise keyboard input still lines you up with a single-tile gap
+## instead of clipping its edge and stopping dead. Only runs when the player
+## isn't also pressing the perpendicular direction, so it never fights a
+## deliberate turn - and it only nudges position, so collide_and_slide still
+## blocks it same as any other movement if the nudge would walk into a wall.
+func _apply_lane_assist(delta: float) -> void:
+	var assist_speed := SPEED * delta
+	if move_dir.x != 0 and move_dir.y == 0:
+		var target_y := roundf(position.y / Constants.TILE_SIZE) * Constants.TILE_SIZE
+		position.y = move_toward(position.y, target_y, assist_speed)
+	elif move_dir.y != 0 and move_dir.x == 0:
+		var target_x := roundf(position.x / Constants.TILE_SIZE) * Constants.TILE_SIZE
+		position.x = move_toward(position.x, target_x, assist_speed)
 
 func _update_move_dir() -> void:
 	move_dir = Vector2.ZERO
