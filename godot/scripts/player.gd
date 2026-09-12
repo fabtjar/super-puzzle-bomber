@@ -16,8 +16,6 @@ var can_move: bool = true
 var facing: int = Constants.Dir.DOWN
 
 var move_dir: Vector2 = Vector2.ZERO
-var last_position: Vector2 = Vector2.ZERO
-var movement_amount: float = 0.0
 var touching: Dictionary = {}
 
 var sprite: AnimatedSprite2D
@@ -52,7 +50,6 @@ func _ready() -> void:
 	wrap_sprite.visible = false
 	add_child(wrap_sprite)
 
-	last_position = position
 	_reset_touching()
 
 func _reset_touching() -> void:
@@ -70,8 +67,6 @@ func get_center() -> Vector2:
 	return position + HITBOX_SIZE / 2.0
 
 func update_input_and_move(delta: float) -> void:
-	last_position = position
-
 	if not can_move:
 		_play(sprite, "idle_down")
 		return
@@ -85,7 +80,7 @@ func update_input_and_move(delta: float) -> void:
 			PlayState.instance.update_ui()
 	_space_was_down = space_now
 
-	movement_amount = SPEED * delta
+	var movement_amount := SPEED * delta
 	position.x += move_dir.x * movement_amount
 	position.y += 0.0 if move_dir.x != 0 else move_dir.y * movement_amount
 
@@ -163,67 +158,28 @@ func _set_animation() -> void:
 func _wrap_around_screen() -> void:
 	if position.x < 0:
 		position.x += Constants.SCREEN_SIZE
-		last_position.x += Constants.SCREEN_SIZE
 	elif position.x > Constants.SCREEN_SIZE:
 		position.x -= Constants.SCREEN_SIZE
-		last_position.x -= Constants.SCREEN_SIZE
 	if position.y < 0:
 		position.y += Constants.SCREEN_SIZE
-		last_position.y += Constants.SCREEN_SIZE
 	elif position.y > Constants.SCREEN_SIZE:
 		position.y -= Constants.SCREEN_SIZE
-		last_position.y -= Constants.SCREEN_SIZE
 
-## Ports Player.hx collideAndSlide(): resolve overlaps against solids, then
-## use the remaining unspent movement to slide around corners when pressing
-## into a wall at an angle, then resolve once more.
+## Resolves overlap against every solid using minimum-translation-vector
+## (MTV) separation: for each overlapping solid, push out along whichever
+## axis has the smaller penetration. This replaced a direct port of
+## Player.hx's delta-sign-based collideAndSlide(), which could disagree with
+## itself frame to frame near a corner (two adjacent solids, each resolved
+## against a different axis) and visibly jitter. MTV is deterministic from
+## the current geometry alone, so it converges instead of oscillating, and
+## since movement here is always single-axis per frame, resolving the
+## shallower-penetration axis already produces the smooth corner-nudge the
+## original's separate "slide" pass was for.
 func collide_and_slide(solid_rects: Array) -> void:
-	_resolve_collisions(solid_rects)
-
-	var moved := absf(position.x - last_position.x) + absf(position.y - last_position.y)
-	var remaining := movement_amount - moved
-	var sliding := remaining
-	var rect := get_rect()
-
-	if touching[Constants.Dir.UP]:
-		if move_dir.x != 0:
-			position.x += remaining * move_dir.x
-		elif not _point_in_rects(Vector2(rect.position.x + 1, rect.position.y - 1), solid_rects):
-			position.x -= sliding
-		elif not _point_in_rects(Vector2(rect.end.x - 1, rect.position.y - 1), solid_rects):
-			position.x += sliding
-	elif touching[Constants.Dir.DOWN]:
-		if move_dir.x != 0:
-			position.x += remaining * move_dir.x
-		elif not _point_in_rects(Vector2(rect.position.x + 1, rect.end.y + 1), solid_rects):
-			position.x -= sliding
-		elif not _point_in_rects(Vector2(rect.end.x - 1, rect.end.y + 1), solid_rects):
-			position.x += sliding
-	elif touching[Constants.Dir.LEFT]:
-		if move_dir.y != 0:
-			position.y += remaining * move_dir.y
-		elif not _point_in_rects(Vector2(rect.position.x - 1, rect.position.y + 1), solid_rects):
-			position.y -= sliding
-		elif not _point_in_rects(Vector2(rect.position.x - 1, rect.end.y - 1), solid_rects):
-			position.y += sliding
-	elif touching[Constants.Dir.RIGHT]:
-		if move_dir.y != 0:
-			position.y += remaining * move_dir.y
-		elif not _point_in_rects(Vector2(rect.end.x + 1, rect.position.y + 1), solid_rects):
-			position.y -= sliding
-		elif not _point_in_rects(Vector2(rect.end.x + 1, rect.end.y - 1), solid_rects):
-			position.y += sliding
-
-	_resolve_collisions(solid_rects)
-
-func _resolve_collisions(solid_rects: Array) -> void:
 	_reset_touching()
 	for solid_rect in solid_rects:
 		_separate_against(solid_rect)
 
-## AABB separation using this frame's movement direction to decide which
-## side to push out of - the practical behaviour of Flixel's FlxG.collide
-## for an immovable solid against a moving object.
 func _separate_against(solid: Rect2) -> void:
 	var rect := get_rect()
 	if not rect.intersects(solid):
@@ -234,46 +190,23 @@ func _separate_against(solid: Rect2) -> void:
 	if overlap_x <= 0.0 or overlap_y <= 0.0:
 		return
 
-	var dx := position.x - last_position.x
-	var dy := position.y - last_position.y
+	var center := rect.position + rect.size / 2.0
+	var solid_center := solid.position + solid.size / 2.0
 
-	if dx != 0.0 and (dy == 0.0 or overlap_x <= overlap_y):
-		if dx > 0.0:
+	if overlap_x < overlap_y:
+		if center.x < solid_center.x:
 			position.x -= overlap_x
 			touching[Constants.Dir.RIGHT] = true
 		else:
 			position.x += overlap_x
 			touching[Constants.Dir.LEFT] = true
-	elif dy != 0.0:
-		if dy > 0.0:
+	else:
+		if center.y < solid_center.y:
 			position.y -= overlap_y
 			touching[Constants.Dir.DOWN] = true
 		else:
 			position.y += overlap_y
 			touching[Constants.Dir.UP] = true
-	else:
-		var center := rect.position + rect.size / 2.0
-		var solid_center := solid.position + solid.size / 2.0
-		if overlap_x < overlap_y:
-			if center.x < solid_center.x:
-				position.x -= overlap_x
-				touching[Constants.Dir.RIGHT] = true
-			else:
-				position.x += overlap_x
-				touching[Constants.Dir.LEFT] = true
-		else:
-			if center.y < solid_center.y:
-				position.y -= overlap_y
-				touching[Constants.Dir.DOWN] = true
-			else:
-				position.y += overlap_y
-				touching[Constants.Dir.UP] = true
-
-func _point_in_rects(point: Vector2, rects: Array) -> bool:
-	for r in rects:
-		if r.has_point(point):
-			return true
-	return false
 
 func update_wrap_sprite() -> void:
 	var rect := get_rect()
