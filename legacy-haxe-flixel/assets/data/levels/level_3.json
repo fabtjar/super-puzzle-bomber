@@ -1,0 +1,35 @@
+{
+  "ogmoVersion": "3.3.0",
+  "width": 640,
+  "height": 640,
+  "offsetX": 0,
+  "offsetY": 0,
+  "values": {"bombs": 4, "size": 1, "talkText": "This one looks tricky. I wonder if you can do this?", "talkWinText": "I probably could have done this faster than you."},
+  "layers": [
+    {
+      "name": "world",
+      "_eid": "82543836",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 64,
+      "gridCellHeight": 64,
+      "gridCellsX": 10,
+      "gridCellsY": 10,
+      "tileset": "tiles",
+      "data2D": [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, -1, -1, -1, -1, -1, 2, 1],
+        [1, 1, 1, -1, 1, 1, 1, 1, 0, 1],
+        [1, 0, 0, 0, 0, 2, -1, 0, 3, 1],
+        [1, 2, 1, -1, 1, 1, 1, 1, 0, 1],
+        [1, -1, -1, 0, 1, 7, -1, 1, 2, 1],
+        [1, -1, 1, 0, 1, 1, -1, 1, 0, 1],
+        [1, -1, 1, 0, 1, 1, -1, 1, 0, 1],
+        [1, 2, 2, 0, 2, 0, 0, 0, 5, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      ],
+      "exportMode": 0,
+      "arrayMode": 1
+    }
+  ]
+}

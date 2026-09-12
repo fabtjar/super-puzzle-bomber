@@ -1,0 +1,25 @@
+; Engine configuration file.
+; Super Puzzle Bomber
+
+config_version=5
+
+[application]
+
+config/name="Super Puzzle Bomber"
+run/main_scene="res://scenes/Title.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[autoload]
+
+Game="*res://autoload/game.gd"
+
+[display]
+
+window/size/viewport_width=640
+window/size/viewport_height=640
+window/stretch/mode="canvas_items"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
